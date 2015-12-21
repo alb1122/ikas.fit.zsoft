@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.appindexing.Action;
@@ -44,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private GoogleApiClient mClient = null;
     private OnDataPointListener mListener;
     private int previousValue;
+    private int pasos;
+    private Button btnRefresco;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -59,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
         tvlog = (TextView) findViewById(R.id.txtlog);
         tvlog2= (TextView) findViewById(R.id.txtlog2);
-
+        btnRefresco=(Button) findViewById(R.id.btnRefresco);
+        pasos=0;
         // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         // fab.setOnClickListener(new View.OnClickListener() {
         //    @Override
@@ -77,6 +82,12 @@ public class MainActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        btnRefresco.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                tvlog2.setText("los pasos que llevo" + pasos);
+            }
+        });
+
     }
 
     @Override
@@ -108,7 +119,9 @@ public class MainActivity extends AppCompatActivity {
 
                 .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
                 .addScope(Fitness.SCOPE_ACTIVITY_READ)
+                .addScope(Fitness.SCOPE_ACTIVITY_READ_WRITE)
                 .addScope(Fitness.SCOPE_BODY_READ_WRITE)
+                .addScope(Fitness.SCOPE_LOCATION_READ_WRITE)
                 .addConnectionCallbacks(
                         new GoogleApiClient.ConnectionCallbacks() {
 
@@ -246,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
         Fitness.SensorsApi.findDataSources(mClient, new DataSourcesRequest.Builder()
                 // At least one datatype must be specified.
                 .setDataTypes(DataType.TYPE_STEP_COUNT_CUMULATIVE)
-                .setDataTypes(DataType.AGGREGATE_DISTANCE_DELTA)
+                //.setDataTypes(DataType.AGGREGATE_DISTANCE_DELTA)
                         // Can specify whether data type is raw or derived.
                 .setDataSourceTypes(DataSource.TYPE_RAW)
                 .build())
@@ -272,12 +285,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerFitnessDataListener(DataSource dataSource, DataType dataType) {
         // [START register_data_listener]
+
         mListener = new OnDataPointListener() {
+
             @Override
             public void onDataPoint(DataPoint dataPoint) {
                // int pasosTotales=dataPoint.getDataType().getFields().get(0).getClass().getFields();
                 for (Field field : dataPoint.getDataType().getFields()) {
-                    tvlog2.setText(field.getName());
+                    pasos++;
+                    tvlog2.setText("tipo de datos " + field.getName() + " " + pasos + " en la session");
                     Value val = dataPoint.getValue(field);
 
                     Log.i(TAG, "Detected DataPoint field: " + field.getName());
